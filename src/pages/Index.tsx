@@ -3,14 +3,27 @@ import React from 'react';
 import Hero from '@/components/Hero';
 import ProductCard from '@/components/ProductCard';
 import Footer from '@/components/Footer';
-import { products } from '@/data/products';
+import { useProductsData } from '@/hooks/useProductsData';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Shield, Truck, CreditCard, Headphones } from 'lucide-react';
+import { ArrowRight, Shield, Truck, CreditCard, Headphones, Loader2 } from 'lucide-react';
 
 const Index = () => {
+  const { data: products = [], isLoading, error } = useProductsData();
+  
   const featuredProducts = products.filter(product => product.featured).slice(0, 3);
   const allCategories = [...new Set(products.map(p => p.category))];
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Ошибка загрузки</h1>
+          <p className="text-gray-600">Не удалось загрузить данные о товарах</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -27,13 +40,19 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {featuredProducts.map((product) => (
-              <div key={product.id} className="animate-fade-in">
-                <ProductCard product={product} />
-              </div>
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {featuredProducts.map((product) => (
+                <div key={product.id} className="animate-fade-in">
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center">
             <Button asChild size="lg" className="bg-black hover:bg-gray-800 text-white">
@@ -54,38 +73,44 @@ const Index = () => {
             <p className="text-gray-600 text-lg">Найдите именно то, что вам нужно</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {allCategories.map((category) => {
-              const categoryNames = {
-                iphone: 'iPhone',
-                ipad: 'iPad',
-                mac: 'Mac',
-                watch: 'Apple Watch',
-                airpods: 'AirPods',
-                accessories: 'Аксессуары'
-              };
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {allCategories.map((category) => {
+                const categoryNames: Record<string, string> = {
+                  'iPhone': 'iPhone',
+                  'iPad': 'iPad', 
+                  'MacBook Pro': 'MacBook Pro',
+                  'Apple Watch': 'Apple Watch',
+                  'AirPods': 'AirPods',
+                  'Accessories': 'Аксессуары'
+                };
 
-              return (
-                <Link
-                  key={category}
-                  to={`/catalog?category=${category}`}
-                  className="group p-6 bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 text-center hover:-translate-y-1"
-                >
-                  <div className="text-2xl mb-3">
-                    {category === 'iphone' && '📱'}
-                    {category === 'ipad' && '📟'}
-                    {category === 'mac' && '💻'}
-                    {category === 'watch' && '⌚'}
-                    {category === 'airpods' && '🎧'}
-                    {category === 'accessories' && '🔌'}
-                  </div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-black transition-colors">
-                    {categoryNames[category as keyof typeof categoryNames]}
-                  </h3>
-                </Link>
-              );
-            })}
-          </div>
+                return (
+                  <Link
+                    key={category}
+                    to={`/catalog?category=${encodeURIComponent(category)}`}
+                    className="group p-6 bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 text-center hover:-translate-y-1"
+                  >
+                    <div className="text-2xl mb-3">
+                      {category === 'iPhone' && '📱'}
+                      {(category === 'iPad' || category.includes('iPad')) && '📟'}
+                      {(category === 'MacBook Pro' || category.includes('Mac')) && '💻'}
+                      {(category === 'Apple Watch' || category.includes('Watch')) && '⌚'}
+                      {(category === 'AirPods' || category.includes('AirPods')) && '🎧'}
+                      {category === 'Accessories' && '🔌'}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 group-hover:text-black transition-colors">
+                      {categoryNames[category] || category}
+                    </h3>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 

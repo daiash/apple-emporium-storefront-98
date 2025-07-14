@@ -1,23 +1,46 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { products } from '@/data/products';
+import { useProductsData } from '@/hooks/useProductsData';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/context/CartContext';
-import { ArrowLeft, ShoppingBag, Star, Shield, Truck, CreditCard } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, Star, Shield, Truck, CreditCard, Loader2 } from 'lucide-react';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { data: products = [], isLoading, error } = useProductsData();
 
   const product = products.find(p => p.id === id);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState('');
   const [selectedStorage, setSelectedStorage] = useState('');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Ошибка загрузки</h1>
+          <p className="text-gray-600">Не удалось загрузить информацию о товаре</p>
+          <Button onClick={() => navigate('/catalog')} className="mt-4">
+            Вернуться к каталогу
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -40,7 +63,7 @@ const ProductDetail = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU').format(price);
+    return new Intl.NumberFormat('kk-KZ').format(price);
   };
 
   return (
@@ -61,7 +84,7 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="aspect-square bg-white rounded-2xl overflow-hidden shadow-lg">
               <img
-                src={product.images[selectedImage]}
+                src={product.images[selectedImage] || '/placeholder.svg'}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
@@ -74,7 +97,7 @@ const ProductDetail = () => {
                     key={index}
                     onClick={() => setSelectedImage(index)}
                     className={`aspect-square bg-white rounded-lg overflow-hidden border-2 transition-colors ${
-                      selectedImage === index ? 'border-apple-blue' : 'border-gray-200'
+                      selectedImage === index ? 'border-black' : 'border-gray-200'
                     }`}
                   >
                     <img
@@ -119,19 +142,9 @@ const ProductDetail = () => {
             <div className="bg-gray-100 rounded-2xl p-6">
               <div className="flex items-baseline space-x-4">
                 <span className="text-3xl font-bold text-gray-900">
-                  {formatPrice(product.price)} ₽
+                  {formatPrice(product.price)} ₸
                 </span>
-                {product.originalPrice && (
-                  <span className="text-lg text-gray-500 line-through">
-                    {formatPrice(product.originalPrice)} ₽
-                  </span>
-                )}
               </div>
-              {product.originalPrice && (
-                <p className="text-green-600 font-medium mt-1">
-                  Экономия: {formatPrice(product.originalPrice - product.price)} ₽
-                </p>
-              )}
             </div>
 
             {/* Color Selection */}
@@ -177,7 +190,7 @@ const ProductDetail = () => {
               onClick={handleAddToCart}
               disabled={!product.inStock}
               size="lg"
-              className="w-full bg-apple-blue hover:bg-blue-700 text-white py-4 text-lg font-semibold"
+              className="w-full bg-black hover:bg-gray-800 text-white py-4 text-lg font-semibold"
             >
               <ShoppingBag className="w-5 h-5 mr-2" />
               Добавить в корзину
@@ -186,15 +199,15 @@ const ProductDetail = () => {
             {/* Features */}
             <div className="grid grid-cols-3 gap-4 pt-6">
               <div className="text-center p-4 bg-white rounded-xl">
-                <Truck className="w-8 h-8 text-apple-blue mx-auto mb-2" />
+                <Truck className="w-8 h-8 text-black mx-auto mb-2" />
                 <p className="text-sm font-medium">Быстрая доставка</p>
               </div>
               <div className="text-center p-4 bg-white rounded-xl">
-                <Shield className="w-8 h-8 text-apple-blue mx-auto mb-2" />
+                <Shield className="w-8 h-8 text-black mx-auto mb-2" />
                 <p className="text-sm font-medium">Гарантия Apple</p>
               </div>
               <div className="text-center p-4 bg-white rounded-xl">
-                <CreditCard className="w-8 h-8 text-apple-blue mx-auto mb-2" />
+                <CreditCard className="w-8 h-8 text-black mx-auto mb-2" />
                 <p className="text-sm font-medium">Рассрочка 0%</p>
               </div>
             </div>

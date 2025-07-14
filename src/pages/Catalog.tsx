@@ -2,32 +2,29 @@
 import React, { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '@/components/ProductCard';
-import { products } from '@/data/products';
+import { useProductsData } from '@/hooks/useProductsData';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, Loader2 } from 'lucide-react';
 
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
-    searchParams.get('category') ? [searchParams.get('category')!] : []
+    searchParams.get('category') ? [decodeURIComponent(searchParams.get('category')!)] : []
   );
   const [priceRange, setPriceRange] = useState([0, 300000]);
-  const [showFilters, setShowFilters] = useState(false);
 
-  const categories = [
-    { id: 'iphone', name: 'iPhone' },
-    { id: 'ipad', name: 'iPad' },
-    { id: 'mac', name: 'Mac' },
-    { id: 'watch', name: 'Apple Watch' },
-    { id: 'airpods', name: 'AirPods' },
-    { id: 'accessories', name: 'Аксессуары' }
-  ];
+  const { data: products = [], isLoading, error } = useProductsData();
+
+  const categories = useMemo(() => {
+    const uniqueCategories = [...new Set(products.map(p => p.category))];
+    return uniqueCategories.map(cat => ({ id: cat, name: cat }));
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
@@ -43,7 +40,7 @@ const Catalog = () => {
 
       return matchesSearch && matchesCategory && matchesPrice && matchesFeatured;
     });
-  }, [searchTerm, selectedCategories, priceRange, searchParams]);
+  }, [products, searchTerm, selectedCategories, priceRange, searchParams]);
 
   const handleCategoryChange = (categoryId: string, checked: boolean) => {
     if (checked) {
@@ -61,8 +58,19 @@ const Catalog = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('ru-RU').format(price);
+    return new Intl.NumberFormat('kk-KZ').format(price);
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Ошибка загрузки</h1>
+          <p className="text-gray-600">Не удалось загрузить каталог товаров</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -111,31 +119,37 @@ const Catalog = () => {
                 {/* Categories */}
                 <div>
                   <label className="text-sm font-medium mb-3 block">Категории</label>
-                  <div className="space-y-2">
-                    {categories.map((category) => (
-                      <div key={category.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={category.id}
-                          checked={selectedCategories.includes(category.id)}
-                          onCheckedChange={(checked) => 
-                            handleCategoryChange(category.id, checked as boolean)
-                          }
-                        />
-                        <label
-                          htmlFor={category.id}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {category.name}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+                  {isLoading ? (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {categories.map((category) => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={category.id}
+                            checked={selectedCategories.includes(category.id)}
+                            onCheckedChange={(checked) => 
+                              handleCategoryChange(category.id, checked as boolean)
+                            }
+                          />
+                          <label
+                            htmlFor={category.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {category.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Price Range */}
                 <div>
                   <label className="text-sm font-medium mb-3 block">
-                    Цена: {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])} ₽
+                    Цена: {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])} ₸
                   </label>
                   <Slider
                     value={priceRange}
@@ -186,13 +200,17 @@ const Catalog = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-gray-600">
-                  Найдено {filteredProducts.length} товар(ов)
+                  {isLoading ? 'Загрузка...' : `Найдено ${filteredProducts.length} товар(ов)`}
                 </p>
               </div>
             </div>
 
             {/* Products */}
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin" />
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <div key={product.id} className="animate-fade-in">

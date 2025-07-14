@@ -8,10 +8,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { products } from '@/data/products';
 import { Product } from '@/types/product';
-import { Plus, Edit, Trash2, Save, X, Package, BarChart3, Users, ShoppingBag, Upload, Image as ImageIcon } from 'lucide-react';
+import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
+import { Plus, Edit, Trash2, Save, X, Package, BarChart3, Users, ShoppingBag, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders'>('dashboard');
@@ -22,14 +22,18 @@ const Admin = () => {
     name: '',
     description: '',
     price: 0,
-    category: 'iphone',
+    category: 'iPhone',
     images: [],
-    specifications: {},
     inStock: true,
     featured: false,
-    colors: [],
-    storage: []
+    subtype: ''
   });
+
+  // Hooks
+  const { data: products = [], isLoading, error } = useProducts();
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -43,27 +47,49 @@ const Admin = () => {
       name: '',
       description: '',
       price: 0,
-      category: 'iphone',
+      category: 'iPhone',
       images: [],
-      specifications: {},
       inStock: true,
       featured: false,
-      colors: [],
-      storage: []
+      subtype: ''
     });
     setIsCreating(true);
   };
 
-  const handleSave = () => {
-    console.log('Saving product:', formData);
-    setEditingProduct(null);
-    setIsCreating(false);
+  const handleSave = async () => {
+    if (!formData.name || !formData.category || formData.price === undefined) {
+      toast.error('Пожалуйста, заполните все обязательные поля');
+      return;
+    }
+
+    try {
+      if (isCreating) {
+        await createProductMutation.mutateAsync(formData as Omit<Product, 'id' | 'createdAt' | 'updatedAt'>);
+      } else if (editingProduct) {
+        await updateProductMutation.mutateAsync({ 
+          id: editingProduct.id, 
+          ...formData 
+        });
+      }
+      
+      setEditingProduct(null);
+      setIsCreating(false);
+      setFormData({});
+    } catch (error) {
+      console.error('Save error:', error);
+    }
   };
 
   const handleCancel = () => {
     setEditingProduct(null);
     setIsCreating(false);
     setFormData({});
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
+      await deleteProductMutation.mutateAsync(id);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +124,18 @@ const Admin = () => {
     { id: 'products', name: 'Товары', icon: Package },
     { id: 'orders', name: 'Заказы', icon: ShoppingBag }
   ];
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="p-6">
+          <CardContent>
+            <p className="text-red-600">Ошибка загрузки данных: {error.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -141,7 +179,7 @@ const Admin = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Всего товаров</p>
-                      <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                      <p className="text-2xl font-bold">{isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : stats.totalProducts}</p>
                     </div>
                     <Package className="w-8 h-8 text-black" />
                   </div>
@@ -153,7 +191,7 @@ const Admin = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">В наличии</p>
-                      <p className="text-2xl font-bold">{stats.inStock}</p>
+                      <p className="text-2xl font-bold">{isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : stats.inStock}</p>
                     </div>
                     <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                       <div className="w-4 h-4 bg-green-500 rounded-full"></div>
@@ -167,7 +205,7 @@ const Admin = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Популярные</p>
-                      <p className="text-2xl font-bold">{stats.featured}</p>
+                      <p className="text-2xl font-bold">{isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : stats.featured}</p>
                     </div>
                     <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                       <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
@@ -181,7 +219,7 @@ const Admin = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-600">Общая стоимость</p>
-                      <p className="text-2xl font-bold">{formatPrice(stats.totalValue)} ₸</p>
+                      <p className="text-2xl font-bold">{isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : `${formatPrice(stats.totalValue)} ₸`}</p>
                     </div>
                     <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                       <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
@@ -277,21 +315,31 @@ const Admin = () => {
                       <div>
                         <Label htmlFor="category">Категория</Label>
                         <Select 
-                          value={formData.category || 'iphone'} 
+                          value={formData.category || 'iPhone'} 
                           onValueChange={(value) => setFormData({ ...formData, category: value as any })}
                         >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="iphone">iPhone</SelectItem>
-                            <SelectItem value="ipad">iPad</SelectItem>
-                            <SelectItem value="mac">Mac</SelectItem>
-                            <SelectItem value="watch">Apple Watch</SelectItem>
-                            <SelectItem value="airpods">AirPods</SelectItem>
-                            <SelectItem value="accessories">Аксессуары</SelectItem>
+                            <SelectItem value="iPhone">iPhone</SelectItem>
+                            <SelectItem value="iPad">iPad</SelectItem>
+                            <SelectItem value="MacBook Pro">MacBook Pro</SelectItem>
+                            <SelectItem value="Apple Watch">Apple Watch</SelectItem>
+                            <SelectItem value="AirPods">AirPods</SelectItem>
+                            <SelectItem value="Accessories">Аксессуары</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="subtype">Подтип</Label>
+                        <Input
+                          id="subtype"
+                          value={formData.subtype || ''}
+                          onChange={(e) => setFormData({ ...formData, subtype: e.target.value })}
+                          placeholder="Подтип товара"
+                        />
                       </div>
                     </div>
 
@@ -377,8 +425,16 @@ const Admin = () => {
                   </div>
 
                   <div className="flex space-x-4">
-                    <Button onClick={handleSave} className="bg-black hover:bg-gray-800">
-                      <Save className="w-4 h-4 mr-2" />
+                    <Button 
+                      onClick={handleSave} 
+                      className="bg-black hover:bg-gray-800"
+                      disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                    >
+                      {(createProductMutation.isPending || updateProductMutation.isPending) ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
                       Сохранить
                     </Button>
                     <Button variant="outline" onClick={handleCancel}>
@@ -390,62 +446,70 @@ const Admin = () => {
             )}
 
             {/* Products List */}
-            <div className="grid grid-cols-1 gap-4">
-              {products.map((product) => (
-                <Card key={product.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div>
-                          <h3 className="font-semibold text-lg">{product.name}</h3>
-                          <p className="text-gray-600 text-sm">{product.description}</p>
-                          <div className="flex items-center space-x-2 mt-2">
-                            <Badge variant="secondary">{product.category}</Badge>
-                            {product.featured && <Badge>Популярное</Badge>}
-                            <Badge variant={product.inStock ? "default" : "destructive"}>
-                              {product.inStock ? 'В наличии' : 'Нет в наличии'}
-                            </Badge>
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {products.map((product) => (
+                  <Card key={product.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <img
+                            src={product.images[0] || '/placeholder.svg'}
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded-lg"
+                          />
+                          <div>
+                            <h3 className="font-semibold text-lg">{product.name}</h3>
+                            <p className="text-gray-600 text-sm">{product.description}</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <Badge variant="secondary">{product.category}</Badge>
+                              {product.subtype && <Badge variant="outline">{product.subtype}</Badge>}
+                              {product.featured && <Badge>Популярное</Badge>}
+                              <Badge variant={product.inStock ? "default" : "destructive"}>
+                                {product.inStock ? 'В наличии' : 'Нет в наличии'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <div className="font-bold text-lg">{formatPrice(product.price)} ₸</div>
+                          </div>
+
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleEdit(product)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => handleDelete(product.id)}
+                              disabled={deleteProductMutation.isPending}
+                            >
+                              {deleteProductMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
                           </div>
                         </div>
                       </div>
-
-                      <div className="flex items-center space-x-4">
-                        <div className="text-right">
-                          <div className="font-bold text-lg">{formatPrice(product.price)} ₸</div>
-                          {product.originalPrice && (
-                            <div className="text-sm text-gray-500 line-through">
-                              {formatPrice(product.originalPrice)} ₸
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEdit(product)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
