@@ -8,7 +8,7 @@ export const products: Product[] = [
     description: 'Самый продвинутый iPhone с титановым корпусом и чипом A17 Pro',
     price: 129990,
     originalPrice: 139990,
-    category: 'iphone',
+    category: 'iPhone',
     images: [
       'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500',
       'https://images.unsplash.com/photo-1556656793-08538906a9f8?w=500'
@@ -31,7 +31,7 @@ export const products: Product[] = [
     name: 'MacBook Pro 14"',
     description: 'Профессиональный ноутбук с чипом M3 Pro для максимальной производительности',
     price: 219990,
-    category: 'mac',
+    category: 'MacBook Pro',
     images: [
       'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500',
       'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500'
@@ -53,7 +53,7 @@ export const products: Product[] = [
     name: 'iPad Pro 12.9"',
     description: 'Самый мощный iPad с чипом M2 и дисплеем Liquid Retina XDR',
     price: 139990,
-    category: 'ipad',
+    category: 'iPad',
     images: [
       'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=500',
       'https://images.unsplash.com/photo-1561154464-82e9adf32764?w=500'
@@ -76,7 +76,7 @@ export const products: Product[] = [
     name: 'Apple Watch Series 9',
     description: 'Самые продвинутые умные часы с чипом S9 и новым ярким дисплеем',
     price: 44990,
-    category: 'watch',
+    category: 'Apple Watch',
     images: [
       'https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=500',
       'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=500'
@@ -97,7 +97,7 @@ export const products: Product[] = [
     name: 'AirPods Pro (2-го поколения)',
     description: 'Беспроводные наушники с активным шумоподавлением и адаптивной прозрачностью',
     price: 29990,
-    category: 'airpods',
+    category: 'AirPods',
     images: [
       'https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=500',
       'https://images.unsplash.com/photo-1606220945770-b5b6c2c55bf1?w=500'
@@ -117,7 +117,7 @@ export const products: Product[] = [
     name: 'iPhone 15',
     description: 'Новый iPhone 15 с Dynamic Island и камерой 48 Мп',
     price: 89990,
-    category: 'iphone',
+    category: 'iPhone',
     images: [
       'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500'
     ],
