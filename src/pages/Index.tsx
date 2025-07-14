@@ -97,10 +97,10 @@ const Index = () => {
                   >
                     <div className="text-2xl mb-3">
                       {category === 'iPhone' && '📱'}
-                      {(category === 'iPad' || category.includes('iPad')) && '📟'}
-                      {(category === 'MacBook Pro' || category.includes('Mac')) && '💻'}
-                      {(category === 'Apple Watch' || category.includes('Watch')) && '⌚'}
-                      {(category === 'AirPods' || category.includes('AirPods')) && '🎧'}
+                      {category === 'iPad' && '📟'}
+                      {category === 'MacBook Pro' && '💻'}
+                      {category === 'Apple Watch' && '⌚'}
+                      {category === 'AirPods' && '🎧'}
                       {category === 'Accessories' && '🔌'}
                     </div>
                     <h3 className="font-semibold text-gray-900 group-hover:text-black transition-colors">
