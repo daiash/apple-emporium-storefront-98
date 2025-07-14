@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +11,9 @@ import { Product } from '@/types/product';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
 import { Plus, Edit, Trash2, Save, X, Package, BarChart3, Users, ShoppingBag, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import ProductColorSelector from '@/components/admin/ProductColorSelector';
+import ProductStorageSelector from '@/components/admin/ProductStorageSelector';
+import ProductSpecifications from '@/components/admin/ProductSpecifications';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders'>('dashboard');
@@ -26,7 +28,10 @@ const Admin = () => {
     images: [],
     inStock: true,
     featured: false,
-    subtype: ''
+    subtype: '',
+    colors: [],
+    storage: [],
+    specifications: {}
   });
 
   // Hooks
@@ -51,7 +56,10 @@ const Admin = () => {
       images: [],
       inStock: true,
       featured: false,
-      subtype: ''
+      subtype: '',
+      colors: [],
+      storage: [],
+      specifications: {}
     });
     setIsCreating(true);
   };
@@ -316,7 +324,7 @@ const Admin = () => {
                         <Label htmlFor="category">Категория</Label>
                         <Select 
                           value={formData.category || 'iPhone'} 
-                          onValueChange={(value) => setFormData({ ...formData, category: value as any })}
+                          onValueChange={(value) => setFormData({ ...formData, category: value as any, specifications: {} })}
                         >
                           <SelectTrigger>
                             <SelectValue />
@@ -343,7 +351,7 @@ const Admin = () => {
                       </div>
                     </div>
 
-                    {/* Status */}
+                    {/* Status and Options */}
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2">
                         <Checkbox
@@ -362,6 +370,18 @@ const Admin = () => {
                         />
                         <Label htmlFor="featured">Популярный товар</Label>
                       </div>
+
+                      {/* Color Selector */}
+                      <ProductColorSelector
+                        colors={formData.colors || []}
+                        onColorsChange={(colors) => setFormData({ ...formData, colors })}
+                      />
+
+                      {/* Storage Selector */}
+                      <ProductStorageSelector
+                        storage={formData.storage || []}
+                        onStorageChange={(storage) => setFormData({ ...formData, storage })}
+                      />
                     </div>
                   </div>
 
@@ -375,6 +395,13 @@ const Admin = () => {
                       rows={3}
                     />
                   </div>
+
+                  {/* Specifications */}
+                  <ProductSpecifications
+                    category={formData.category || 'iPhone'}
+                    specifications={formData.specifications || {}}
+                    onSpecificationsChange={(specifications) => setFormData({ ...formData, specifications })}
+                  />
 
                   {/* Image Upload */}
                   <div className="space-y-4">
@@ -472,6 +499,12 @@ const Admin = () => {
                               <Badge variant={product.inStock ? "default" : "destructive"}>
                                 {product.inStock ? 'В наличии' : 'Нет в наличии'}
                               </Badge>
+                              {product.colors && product.colors.length > 0 && (
+                                <Badge variant="outline">{product.colors.length} цветов</Badge>
+                              )}
+                              {product.storage && product.storage.length > 0 && (
+                                <Badge variant="outline">{product.storage.length} объемов</Badge>
+                              )}
                             </div>
                           </div>
                         </div>
