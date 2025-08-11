@@ -31,7 +31,7 @@ export const products: Product[] = [
     name: 'MacBook Pro 14"',
     description: 'Профессиональный ноутбук с чипом M3 Pro для максимальной производительности',
     price: 219990,
-    category: 'MacBook Pro',
+    category: 'Mac',
     images: [
       'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500',
       'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500'

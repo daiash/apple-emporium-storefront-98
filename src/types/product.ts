@@ -5,7 +5,7 @@ export interface Product {
   description: string;
   price: number;
   originalPrice?: number;
-  category: 'iPhone' | 'iPad' | 'MacBook Pro' | 'Apple Watch' | 'AirPods' | 'Accessories';
+  category: 'iPhone' | 'iPad' | 'Mac' | 'Apple Watch' | 'AirPods' | 'Accessories';
   subtype?: string;
   images: string[];
   specifications: Record<string, string>;

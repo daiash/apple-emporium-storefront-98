@@ -36,7 +36,7 @@ const getSpecificationFields = (category: Product['category']): string[] => {
         'Клавиатура',
         'Связь'
       ];
-    case 'MacBook Pro':
+    case 'Mac':
       return [
         'Процессор',
         'Память',

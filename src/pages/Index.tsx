@@ -83,7 +83,7 @@ const Index = () => {
                 const categoryNames: Record<string, string> = {
                   'iPhone': 'iPhone',
                   'iPad': 'iPad', 
-                  'MacBook Pro': 'MacBook Pro',
+                  'Mac': 'Mac',
                   'Apple Watch': 'Apple Watch',
                   'AirPods': 'AirPods',
                   'Accessories': 'Аксессуары'
@@ -98,7 +98,7 @@ const Index = () => {
                     <div className="text-2xl mb-3">
                       {category === 'iPhone' && '📱'}
                       {category === 'iPad' && '📟'}
-                      {category === 'MacBook Pro' && '💻'}
+                      {category === 'Mac' && '💻'}
                       {category === 'Apple Watch' && '⌚'}
                       {category === 'AirPods' && '🎧'}
                       {category === 'Accessories' && '🔌'}

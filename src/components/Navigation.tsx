@@ -13,11 +13,12 @@ const Navigation = () => {
 
   const navItems = [
     { name: 'Главная', path: '/' },
-    { name: 'iPhone', path: '/catalog?category=iphone' },
-    { name: 'iPad', path: '/catalog?category=ipad' },
-    { name: 'Mac', path: '/catalog?category=mac' },
-    { name: 'Watch', path: '/catalog?category=watch' },
-    { name: 'AirPods', path: '/catalog?category=airpods' }
+    { name: 'iPhone', path: '/catalog?category=iPhone' },
+    { name: 'iPad', path: '/catalog?category=iPad' },
+    { name: 'Mac', path: '/catalog?category=Mac' },
+    { name: 'Watch', path: '/catalog?category=Apple%20Watch' },
+    { name: 'AirPods', path: '/catalog?category=AirPods' },
+    { name: 'Аксессуары', path: '/catalog?category=Accessories' }
   ];
 
   return (
