@@ -17,22 +17,32 @@ export const useProductsData = () => {
         throw error;
       }
       
-      return data?.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description || '',
-        price: Number(item.price),
-        category: item.category as any,
-        subtype: item.subtype,
-        images: item.images || [],
-        specifications: {},
-        inStock: item.in_stock,
-        featured: item.featured,
-        colors: [],
-        storage: [],
-        createdAt: item.created_at,
-        updatedAt: item.updated_at
-      })) as Product[] || [];
+      return data?.map(item => {
+        // Map old category names to new ones
+        let mappedCategory = item.category;
+        if (item.category === 'MacBook Pro') {
+          mappedCategory = 'Mac';
+        } else if (item.category === 'iPad Pro') {
+          mappedCategory = 'iPad';
+        }
+        
+        return {
+          id: item.id,
+          name: item.name,
+          description: item.description || '',
+          price: Number(item.price),
+          category: mappedCategory as any,
+          subtype: item.subtype,
+          images: item.images || [],
+          specifications: (item as any).specifications || {},
+          inStock: item.in_stock,
+          featured: item.featured,
+          colors: (item as any).colors || [],
+          storage: (item as any).storage || [],
+          createdAt: item.created_at,
+          updatedAt: item.updated_at
+        };
+      }) as Product[] || [];
     }
   });
 };
