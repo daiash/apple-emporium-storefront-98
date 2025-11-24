@@ -9,11 +9,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Product } from '@/types/product';
 import { useProducts, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/useProducts';
-import { Plus, Edit, Trash2, Save, X, Package, BarChart3, Users, ShoppingBag, Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Package, BarChart3, Users, ShoppingBag, Upload, Image as ImageIcon, Loader2, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import ProductColorSelector from '@/components/admin/ProductColorSelector';
 import ProductStorageSelector from '@/components/admin/ProductStorageSelector';
 import ProductSpecifications from '@/components/admin/ProductSpecifications';
+import { seedProducts } from '@/data/seedProducts';
+import { supabase } from '@/integrations/supabase/client';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'orders'>('dashboard');
@@ -97,6 +99,64 @@ const Admin = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Вы уверены, что хотите удалить этот товар?')) {
       await deleteProductMutation.mutateAsync(id);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    if (!window.confirm('Это добавит все демонстрационные товары в базу данных. Продолжить?')) {
+      return;
+    }
+
+    const loadingToast = toast.loading('Загрузка товаров в базу данных...');
+    
+    try {
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const product of seedProducts) {
+        try {
+          const { error } = await supabase
+            .from('products')
+            .insert({
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              category: product.category,
+              subtype: product.subtype,
+              images: product.images,
+              in_stock: product.inStock,
+              featured: product.featured,
+              colors: product.colors || [],
+              storage: product.storage || [],
+              specifications: product.specifications || {}
+            });
+
+          if (error) {
+            console.error('Error inserting product:', product.name, error);
+            errorCount++;
+          } else {
+            successCount++;
+          }
+        } catch (err) {
+          console.error('Error with product:', product.name, err);
+          errorCount++;
+        }
+      }
+
+      toast.dismiss(loadingToast);
+      
+      if (errorCount === 0) {
+        toast.success(`Успешно добавлено ${successCount} товаров!`);
+      } else {
+        toast.warning(`Добавлено ${successCount} товаров. Ошибок: ${errorCount}`);
+      }
+      
+      // Refresh the products list
+      window.location.reload();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error('Ошибка при загрузке товаров');
+      console.error('Seed error:', error);
     }
   };
 
@@ -262,6 +322,17 @@ const Admin = () => {
                     <div className="text-center">
                       <Users className="w-6 h-6 mx-auto mb-2" />
                       <span>Управление пользователями</span>
+                    </div>
+                  </Button>
+                  
+                  <Button 
+                    onClick={handleSeedDatabase} 
+                    variant="outline" 
+                    className="h-20 border-green-500 text-green-600 hover:bg-green-50"
+                  >
+                    <div className="text-center">
+                      <Database className="w-6 h-6 mx-auto mb-2" />
+                      <span>Загрузить демо-товары</span>
                     </div>
                   </Button>
                 </div>
